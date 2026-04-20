@@ -61,7 +61,7 @@ CONSTRAINT fk_order DEFERRABLE INITIALLY NOT DEFERRED   --Al final de la transac
 >Ejemplos:
 * Ejemplo 1: con restricciones en la tabla
 ```sql
-CREATE TABLE IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS hotel (
     room_id INT,
     start_time TIMESTAMP,
     end_time TIMESTAMP,
