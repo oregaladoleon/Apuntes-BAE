@@ -39,12 +39,13 @@ CONSTRAINT nombre_uk UNIQUE (col1,col2)
 CONSTRAINT nombre_fk FOREIGN KEY (col1,col2)
 REFERENCES tabla_externa (colA,colB)
 ```
-> La estructura es similar para generar una FK, tener en cuenta que podemos añadir la restricción ON DELETE:
+> La estructura es similar para generar una FK, tener en cuenta que podemos añadir la restricción ON DELETE y ON UPDATE:
 
 ```sql
 CONSTRAINT nombre_fk FOREIGN KEY (col1)
 REFERENCES tabla_externa (colA) 
 ON DELETE [OPCION] --Podemos usar: CASCADE (se borra todo lo que dependa), SET NULL (no se borran los datos que dependen, pero queda el campo vacío), RESTRICT (no deja borrar mientras tenga datos asociados)
+ON UPDATE [OPCION] --Permite cambiar el id de origen: CASCADE (actualiza los id relacionados con el origen), sin el ON UPDATE no te permite modificar el id de origen. 
 ```
 > Aquí tener en cuenta que en interelaciones recursivas emplearemos **SET NULL**, en tablas intermedias de relaciones N:M nos interesa **CASCADE**, en entidades débiles nos interesa **CASCADE**.
 * Verificar una expresión, puede referirse a varias columnas:
@@ -61,7 +62,7 @@ CONSTRAINT fk_order DEFERRABLE INITIALLY NOT DEFERRED   --Al final de la transac
 >Ejemplos:
 * Ejemplo 1: con restricciones en la tabla
 ```sql
-CREATE TABLE IF NOT EXISTS hotel (
+CREATE TABLE IF NOT EXISTS (
     room_id INT,
     start_time TIMESTAMP,
     end_time TIMESTAMP,
@@ -127,6 +128,7 @@ VALUES (valor1, valor2,  valor3, ...);
 INSERT INTO nombre_tabla(col1, col2, ...)
 VALUES
 (valor1,valor2),
+...
 (valor3,valor4);
 ```
 > Dentro de VALUES podemos realizar subconsultas:
@@ -134,3 +136,138 @@ VALUES
 INSERT INTO nombre_tabla (col1, col2) VALUES
 (dato1, (SELECT col_objetivo FROM nombre_tabla2 WHERE col_referencia = valor));
 ```
+* Para actualizar datos:
+~~~sql
+UPDATE tabla1
+SET columna1 = valor1, columna2 = valor2, ...
+WHERE condicion;
+~~~
+Ejemplo: 
+~~~sql
+UPDATE cursos
+SET fecha_publicacion = '2020-08-01'
+WHERE curso_id = 3;
+~~~
+* Para eliminar datos:
+~~~sql
+DELETE FROM nombre_tabla
+WHERE condición;
+~~~
+---
+### 6. Realizar consultas.
+La estructura básica se rige por el orden **SFWGHO** (Select, From, Where, Group by, Having, Order by).
+
+> La prioridad a la hora de ejecutar es: **FROM --> WHERE --> SELECT --> ORDER BY**
+
+La estructura completa de una consulta **SELECT** es:
+~~~sql
+SELECT
+col1, 
+col2 AS "alias espacio",
+DISTINCT col3 --sólo muestra una fila de las duplicadas, pertenece al SELECT
+
+FROM
+tabla1 AS t1
+
+ORDER BY
+col1 ASC NULL LAST,  --NULL LAST muestra los NULL al final, ASC orden ascendente
+función1 DESC NULL DESC,
+...
+
+OFFSET  --se utiliza junto al FETCH, nº filas a omitir antes de mostrar resultados
+2 ROWS
+
+FETCH 
+FIRST 5 ROWS ONLY --En vez de first también podemos usar NEXT
+;
+~~~
+La estructura de una consulta con **WHERE** que permite filtrar filas antes de realizar cálculos o agrupaciones:
+~~~sql
+SELECT
+  col1
+FROM
+  tabla1
+WHERE
+  condición 
+ORDER BY
+  col1;
+~~~
+La condición puede albergar los siguientes operadores:  
+| Operador | Uso | Ejemplo |
+|----------|-----|---------|
+|LIKE/ILIKE| Compara texto | ILIKE no distingue entre mayúsculas y minúsculas |
+| BETWEEN | Rangos | WHERE edad BETWEEN 18 AND 25 (incluídos) |
+| IN | Pertenencia | WHERE ciudad IN ('Somo', 'Laredo') |
+|IS NULL | Detecta vacíos | No se puede usar =NULL, debe ser IS NULL o IS NOT NULL|
+| % | Comodín | LIKE 'A%' (empieza por A), LIKE '%a' (termina en a)|
+| OR, IN, AND, !=, >, <,...| 
+
+La estructura de una consulta con **GROUP BY** que agrupa según los valores de la columna especificada:
+
+~~~sql
+SELECT
+col1,
+col2,
+funcion(col3)
+
+FROM
+tabla
+
+GROUP BY --aquí deben estár las columnas no afectadas por la función en el SELECT
+col1,
+col2
+
+HAVING --auxiliar de GROUP BY para filtrar los datos resultantes de aplicar el GROUP BY.
+condición --Por ejemplo: SUM(cantidad) > 200
+;
+~~~
+Ejemplo:
+~~~sql
+SELECT
+    customer_id,
+    SUM(amount) AS total
+FROM
+    payment
+GROUP BY
+    customer_id
+ORDER BY
+    customer_id;
+~~~
+
+La estructura para consultas con **JOINS** que combinan filas de varias tablas basándose en una columna en común:
+
+~~~sql
+SELECT t1.col, t2.col --Importante usar la combinación Alias.columna 
+FROM tabla1 AS t1
+[TIPO DE JOIN] tabla2 AS t2 ON t1.id = t2.id_t1;
+~~~
+* **INNER JOIN**: Devuelve filas cuando hay una coincidencia en ambas tablas. (Es el predeterminado).  
+
+* **LEFT JOIN**: Devuelve todas las filas de la tabla izquierda y las coincidencias de la derecha. Si no hay coincidencia, rellena con NULL.
+
+* **RIGHT JOIN**: Igual al anterior, pero priorizando la tabla derecha.
+
+* **FULL OUTER JOIN**: Devuelve todas las filas de ambas tablas, uniendo donde puede y poniendo NULL donde no.
+
+
+### 7. Funciones.
+Habitualmente, usaremos las funciones agregadas con la clausula GROUP BY en la sentencia SELECT.   
+
+* AVG(): devuelve el valor medio.  
+* COUNT(): devuelve el número de valores.  
+* MAX(): devuelve el valor máximo.  
+* MIN(): devuelve el valor mínimo.  
+* SUM(): devuelve la suma de todos los valores o de los valores distintos.
+
+~~~sql
+SELECT 
+    col_agrupar, 
+    COUNT(*) AS total,          -- Cuenta filas
+    AVG(col_num) AS promedio,   -- Media aritmética
+    MAX(col_num) AS maximo      -- Valor más alto
+FROM tabla
+WHERE condicion_filas           -- Filtra filas ANTES de agrupar
+GROUP BY col_agrupar            -- Obligatorio si hay funciones de agregado y columnas normales
+HAVING AVG(col_num) > 100;      -- Filtra los GRUPOS resultantes (después de agrupar)
+~~~
+
