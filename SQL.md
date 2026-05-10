@@ -255,6 +255,35 @@ SELECT * FROM productos
 WHERE precio > (SELECT AVG(precio) FROM productos); -- Filtra por encima de la media
 ~~~
 
+La estructura de consultas **UNION** de operaciones con el resultado de consultas:
+> Ambas consultas deben tener la misma cantidad de columnas y tipo de dato.
+
+~~~sql
+SELECT col1 
+FROM tabla1
+
+UNION  --aquí podemos utilizar: INTERSECT,EXCEPT (lo contrario a lo que cumple las consultas)
+
+SELECT col1
+FROM tabla2
+
+ORDER BY
+col1
+~~~
+Ejemplo:
+
+~~~sql
+SELECT nombre, 'Paciente' AS tipo -- La estructura 'palabra' AS col_nueva genera una columna nueva que visualiza al registro esa palabra.
+FROM paciente
+
+UNION
+
+SELECT nombre, 'Médico' AS tipo
+FROM medico
+ORDER BY
+nombre ASC;
+~~~
+
 ### 7. Funciones.
 Habitualmente, usaremos las funciones agregadas con la clausula GROUP BY en la sentencia SELECT.   
 
