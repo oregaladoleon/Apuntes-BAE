@@ -249,6 +249,11 @@ FROM tabla1 AS t1
 
 * **FULL OUTER JOIN**: Devuelve todas las filas de ambas tablas, uniendo donde puede y poniendo NULL donde no.
 
+Para realizar subconsultas:
+~~~sql
+SELECT * FROM productos 
+WHERE precio > (SELECT AVG(precio) FROM productos); -- Filtra por encima de la media
+~~~
 
 ### 7. Funciones.
 Habitualmente, usaremos las funciones agregadas con la clausula GROUP BY en la sentencia SELECT.   
@@ -270,4 +275,14 @@ WHERE condicion_filas           -- Filtra filas ANTES de agrupar
 GROUP BY col_agrupar            -- Obligatorio si hay funciones de agregado y columnas normales
 HAVING AVG(col_num) > 100;      -- Filtra los GRUPOS resultantes (después de agrupar)
 ~~~
+
+Otras funciones:
+
+| Función | Acción | Ejemplo |
+|---------|--------|---------|
+| UPPER/LOWER | Cambia mayúsculas/minúsculas | UPPER(col) |
+|ROUND(valor, dec) | Redondea decimales | ROUND(AVG(precio), 2) |
+| COALESCE(col, valor) | Sustituye el primer NULL encontrado | COALESCE(telefono, 'sin tlf') |
+|LIMIT/OFFSET | Paginación resultados | LIMIT 5 OFFSET 10 (salta 10 y muestra 5) |
+
 
