@@ -118,6 +118,15 @@ m.nombre
 
 D: Crea un listado único de "Personas en la Clínica" que contenga dos columnas: nombre y tipo (donde tipo sea el texto 'PACIENTE' o 'MEDICO'). Ordena por nombre.
 
-~~~sql
 
+~~~sql
+SELECT nombre, 'Paciente' AS tipo -- La estructura 'palabra' AS col_nueva genera una columna nueva que visualiza al registro esa palabra.
+FROM paciente
+
+UNION
+
+SELECT nombre, 'Médico' AS tipo
+FROM medico
+ORDER BY
+nombre ASC;
 ~~~
