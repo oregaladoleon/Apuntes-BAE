@@ -157,7 +157,7 @@ WHERE condición;
 ### 6. Realizar consultas.
 La estructura básica se rige por el orden **SFWGHO** (Select, From, Where, Group by, Having, Order by).
 
-> La prioridad a la hora de ejecutar es: **FROM --> WHERE --> SELECT --> ORDER BY**
+> La prioridad a la hora de ejecutar es: **FROM/JOIN --> WHERE --> GROUP BY --> HAVING --> SELECT --> DISTINCT --> ORDER BY --> LIMIT/OFFSET** 
 
 La estructura completa de una consulta **SELECT** es:
 ~~~sql
